@@ -31,9 +31,17 @@ loom {
     // }
 }
 
-
+import org.gradle.internal.os.OperatingSystem
 project.ext.lwjglVersion = "3.3.1"
-project.ext.lwjglNatives = "natives-linux"
+switch (OperatingSystem.current()) {
+    case OperatingSystem.LINUX:
+        project.ext.lwjglNatives = "natives-linux"
+        break
+    case OperatingSystem.WINDOWS:
+        project.ext.lwjglNatives = "natives-windows"
+        break
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
@@ -77,6 +85,11 @@ tasks.withType(JavaCompile).configureEach {
     it.options.encoding = "UTF-8"
     if (JavaVersion.current().isJava9Compatible()) it.options.release = 8
 }
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
 
 java {
     // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
@@ -84,7 +97,14 @@ java {
     // If you remove this line, sources will not be generated.
     withSourcesJar()
 }
-
+remapJar {
+    // remove lwjgl from classpath because remapJar fails if it's present
+    // because of an unsupported class version error in asm that im not sure why it happens
+    classpath.from = classpath.filter {
+        !it.name.contains("lwjgl")
+    }
+    System.out.println(classpath)
+}
 jar {
     from("LICENSE") {
         rename { "${it}_${project.archivesBaseName}" }

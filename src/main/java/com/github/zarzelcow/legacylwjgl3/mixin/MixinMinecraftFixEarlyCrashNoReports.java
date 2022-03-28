@@ -27,8 +27,8 @@ public class MixinMinecraftFixEarlyCrashNoReports {
     // @formatter:on
 
     /**
-     * Fix early crashes (before an opengl context is created) causing crash reports from being generated
      *
+     * @reason Fix early crashes (before an opengl context is created) causing crash reports not being generated
      * @author mojang
      */
     @Overwrite
