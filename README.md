@@ -50,10 +50,10 @@ Options changed from default:
 - VSync: Disabled
 ```
 Left is LWJGL2, Right is legacy-lwjgl3<br>
-![results]() <br>
+![results](.github/results.png) <br>
 as you can see barely any difference, LWJGL2 hovered around 165-172 while legacy-lwjgl3 hovered around 175-183, maybe VBOs could increase this by a bit
 
 ## Contributing
 This project is a work in progress, if you have any suggestions or want to contribute feel free to open an issue or pull request<br>
-**Seriously please I suck at code quality and need people to help me**<br>***Really i w ill accept it im begging you my code quality is so bad 😭***![tiny potato]()
+**Seriously please I suck at code quality and need people to help me**<br>***Really i w ill accept it im begging you my code quality is so bad 😭***![tiny potato](.github/tiny_potato.webp)
 
