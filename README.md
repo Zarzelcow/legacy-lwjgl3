@@ -34,7 +34,7 @@ and not to be a performance increasing mod but while we are here why not compare
 
 The settings used to test the two versions are the same?
 I couldn't get vbos turned on in legacy-lwjgl for some reason so there might be some untapped potential there
-```toml
+```cvs
 JDK: temurin-17 (Adopt OpenJDK Hotspot 17)
 JVM Options:
     -client
