@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "legacy-lwjgl3",
+  "version": "${version}",
+  "name": "Legacy LWJGL3",
+  "description": "A Grotesque hack to bring LWJGL 3 back to legacy versions of Minecraft.",
+  "authors": [
+    "All the LWJGL 2/3 people!",
+    "gudenau for creating the original forge mod",
+    "Zarzelcow (me) porting it to fabric"
+  ],
+  "contact": {
+    "homepage": "https://legacyfabric.net/",
+    "sources": "https://github.com/Legacy-Fabric/fabric-example-mod"
+  },
+  "license": "BSD-Zero",
+  "icon": "assets/legacy-lwjgl3/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.github.zarzelcow.legacylwjgl3.LegacyLWJGL3"
+    ]
+  },
+  "mixins": [
+    "legacy-lwjgl3.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.12.0",
+    "minecraft": "1.8.9"
+  }
+}
