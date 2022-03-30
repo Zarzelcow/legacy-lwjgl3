@@ -10,8 +10,7 @@
     "Zarzelcow (me) porting it to fabric"
   ],
   "contact": {
-    "homepage": "https://legacyfabric.net/",
-    "sources": "https://github.com/Legacy-Fabric/fabric-example-mod"
+    "sources": "https://github.com/Zarzelcow/legacy-lwjgl3"
   },
   "license": "BSD-Zero",
   "icon": "assets/legacy-lwjgl3/icon.png",
