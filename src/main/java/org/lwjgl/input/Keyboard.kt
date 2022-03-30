@@ -132,10 +132,6 @@ object Keyboard {
     val eventCharacter: Char
         get() = (if (latestEvent == null) 0 else latestEvent!!.character) as Char
 
-    private val numberMap = arrayOf(
-        '!', '@', '#', '$', '%', '^', '&', '*', '(', ')'
-    )
-
     fun getCharacter(key: Int, modifiers: Int): Char {
         if (key > LWJGLChars.size) {
             return '\u0000'
@@ -145,9 +141,6 @@ object Keyboard {
             if (Character.isAlphabetic(character.code)) {
                 return character.uppercaseChar()
             } else {
-                if (character in '0'..'9') {
-                    return numberMap[character - '0']
-                }
                 when (character) {
                     '`' -> return '~'
                     '-' -> return '_'
@@ -160,6 +153,16 @@ object Keyboard {
                     ',' -> return '<'
                     '.' -> return '>'
                     '/' -> return '?'
+                    '1' -> return '!'
+                    '2' -> return '@'
+                    '3' -> return '#'
+                    '4' -> return '$'
+                    '5' -> return '%'
+                    '6' -> return '^'
+                    '7' -> return '&'
+                    '8' -> return '*'
+                    '9' -> return '('
+                    '0' -> return ')'
                 }
             }
         }
