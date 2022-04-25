@@ -4,11 +4,10 @@ A hacky over-engineered project that runs LWJGL3 on legacy-fabric minecraft vers
 Allowing you to use modern LWJGL features and libraries on older minecraft versions.
 
 ### Table of Contents
- * [#idk](#idk)
  * Usage
-   * [Dev Environments](#Dev Environments)
+   * [Dev Environments](#dev-environments)
    * [Clients](#Clients)
- * [Performance Increases?](#Performance Increases?) 
+ * [Performance Increases?](#performance-increases) 
 ## Credits
 A whole lot of this code is just code from the original LWJGL 2 project modified to work with LWJGL 3, Thanks so much to
 the LWJGL devs for making their license so permissive.
@@ -36,7 +35,12 @@ switch (OperatingSystem.current()) {
         break
 }
 
+repositories {
+   maven { url 'https://jitpack.io' }
+}
+
 dependencies {
+    implementation "com.github.Zarzelcow:legacy-lwjgl3:-SNAPSHOT"
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
 
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
