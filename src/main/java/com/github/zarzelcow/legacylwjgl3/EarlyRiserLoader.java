@@ -11,7 +11,7 @@ import java.util.Set;
  * Used only to load [EarlyRiser] as soon as possible, so it can define classes before anything else.
  * Idea taken from https://github.com/Chocohead/Fabric-ASM 🥰
  */
-public class Plugin implements IMixinConfigPlugin {
+public class EarlyRiserLoader implements IMixinConfigPlugin {
     @Override
     public void onLoad(String mixinPackage) {
         // no op since we don't need to load anything

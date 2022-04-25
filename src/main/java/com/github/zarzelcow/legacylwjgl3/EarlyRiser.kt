@@ -18,6 +18,7 @@ class EarlyRiser : Runnable {
     override fun run() {
         LegacyLWJGL3.LOGGER.info("EarlyRiser running")
         val pool = ClassPool.getDefault()
+        macroRedefineWithErrorHandling(pool, ::addMissingGLCapabilities)
         macroRedefineWithErrorHandling(pool, ::addLegacyCompatibilityMethodsToGL11)
         macroRedefineWithErrorHandling(pool, ::gl20AddCompatibilityMethods)
         macroRedefineWithErrorHandling(pool, ::copyAlExtensions)
@@ -28,7 +29,7 @@ class EarlyRiser : Runnable {
     private inline fun macroRedefineWithErrorHandling(pool: ClassPool, method: (ClassPool) -> Either<Exception, Int>) {
         when (val result = method(pool)) {
             is Either.Left -> {
-                LegacyLWJGL3.LOGGER.error("Failed in early riser while attempting to hacky things")
+                LegacyLWJGL3.LOGGER.error("Failed in early riser while attempting to do hacky things")
                 result.value.printStackTrace()
             }
             is Either.Right -> Unit // noop since we're good
@@ -36,6 +37,37 @@ class EarlyRiser : Runnable {
     }
 
     companion object {
+        // Adds missing extension checks from LWJGL2 for use in ContextCapabilities
+        private fun addMissingGLCapabilities(classPool: ClassPool): Either<Exception, Int> {
+            return try {
+                with(classPool.get("org.lwjgl.opengl.GLCapabilities")) {
+                    this.addField(CtField.make("public final boolean GL_EXT_multi_draw_arrays;", this))
+                    this.addField(CtField.make("public final boolean GL_EXT_paletted_texture;", this))
+                    this.addField(CtField.make("public final boolean GL_EXT_rescale_normal;", this))
+                    this.addField(CtField.make("public final boolean GL_EXT_texture_3d;", this))
+                    this.addField(CtField.make("public final boolean GL_EXT_texture_lod_bias;", this))
+                    this.addField(CtField.make("public final boolean GL_EXT_vertex_shader;", this))
+                    this.addField(CtField.make("public final boolean GL_EXT_vertex_weighting;", this))
+                    val constructor = this.getConstructor("(Lorg/lwjgl/system/FunctionProvider;Ljava/util/Set;ZLjava/util/function/IntFunction;)V")
+                    constructor.insertAfter(
+                        """
+                            GL_EXT_multi_draw_arrays = ext.contains("GL_EXT_multi_draw_arrays");
+                            GL_EXT_paletted_texture = ext.contains("GL_EXT_paletted_texture");
+                            GL_EXT_rescale_normal = ext.contains("GL_EXT_rescale_normal");
+                            GL_EXT_texture_3d = ext.contains("GL_EXT_texture_3d");
+                            GL_EXT_texture_lod_bias = ext.contains("GL_EXT_texture_lod_bias");
+                            GL_EXT_vertex_shader = ext.contains("GL_EXT_vertex_shader");
+                            GL_EXT_vertex_weighting = ext.contains("GL_EXT_vertex_weighting");
+                        """.trimIndent()
+                    )
+                    this.toClass(GL::class.java)
+                }
+                Either.Right(1)
+            } catch (e: Exception) {
+                Either.Left(e)
+            }
+        }
+
         // list of legacy methods that we need to add to GL11. moved out of method for readability
         private val gl11Translations = listOf(
             Triple("glGetFloat", "glGetFloatv", "(ILjava/nio/FloatBuffer;)V"),
@@ -169,10 +201,6 @@ class EarlyRiser : Runnable {
         open class Either<L, R> {
             data class Left<L, R>(val value: L) : Either<L, R>()
             data class Right<L, R>(val value: R) : Either<L, R>()
-//            companion object {
-//                fun <L, R> left(value: L) = Left<L, R>(value)
-//                fun <L, R> right(value: R) = Right<L, R>(value)
-//            }
         }
     }
 }

@@ -6769,24 +6769,19 @@ public class ContextCapabilities{
 
         try{
             GLCapabilities capabilities = GL.getCapabilities();
-            Field[] thereFields = GLCapabilities.class.getDeclaredFields();
+            Field[] theirFields = GLCapabilities.class.getDeclaredFields();
             Field[] ourFields = ContextCapabilities.class.getDeclaredFields();
-
-            Arrays.stream(thereFields).forEach(field->field.setAccessible(true));
-            Arrays.stream(ourFields).forEach(field->field.setAccessible(true));
-
             for(Field ourField : ourFields){
                 int mods = ourField.getModifiers();
                 if(ourField.getType() == Boolean.TYPE &&
                         !Modifier.isStatic(mods) &&
                         Modifier.isPublic(mods) &&
-                        Modifier.isFinal(mods)){
+                        !Modifier.isFinal(mods)){
 
                     String name = ourField.getName();
-                    Optional<Field> optional = Arrays.stream(thereFields).filter(field -> name.equals(field.getName())).findAny();
-                    if(optional.isPresent()){
-                        Field thereField = optional.get();
-                        ourField.setBoolean(this, thereField.getBoolean(capabilities));
+                    Field theirField = Arrays.stream(theirFields).filter(it -> it.getName().equals(name)).findFirst().orElse(null);
+                    if (theirField != null) {
+                        ourField.setBoolean(this, theirField.getBoolean(capabilities));
                     }
                 }
             }

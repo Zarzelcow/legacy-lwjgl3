@@ -11,6 +11,7 @@ import java.nio.IntBuffer;
 
 import static org.lwjgl.openal.AL.createCapabilities;
 
+// Used to extend LWJGL's AL class with legacy compatibility methods
 public class ALExtensions {
     private static long _contextPtr;
     private static long _devicePtr;

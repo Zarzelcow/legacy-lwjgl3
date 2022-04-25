@@ -5,7 +5,7 @@
   "name": "Legacy LWJGL3",
   "description": "A Grotesque hack to bring LWJGL 3 back to legacy versions of Minecraft.",
   "authors": [
-    "All the LWJGL 2/3 people!",
+    "All the LWJGL 2 and 3 people!",
     "gudenau for creating the original forge mod",
     "Zarzelcow (me) porting it to fabric"
   ],

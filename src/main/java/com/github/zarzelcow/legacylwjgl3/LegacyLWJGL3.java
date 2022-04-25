@@ -9,10 +9,6 @@ public class LegacyLWJGL3 implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		// This code runs as soon as Minecraft is in a mod-load-ready state.
-		// However, some things (like resources) may still be uninitialized.
-		// Proceed with mild caution.
-		LOGGER.info("This is definitely a legacy LWJGL2 mod!");
-
+		LOGGER.info("This is definitely a 100% legit legacy LWJGL2 mod!");
 	}
 }

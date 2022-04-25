@@ -31,6 +31,7 @@
  */
 package org.lwjgl.opengl;
 
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.LWJGLException;
 
 import java.util.Map;
@@ -43,9 +44,6 @@ import java.util.WeakHashMap;
  */
 public class GLContext {
     private static final ThreadLocal<ContextCapabilities> current_capabilities = new ThreadLocal<>();
-    private static CapabilitiesCacheEntry fast_path_cache = new CapabilitiesCacheEntry();
-    private static final ThreadLocal<CapabilitiesCacheEntry> thread_cache_entries = new ThreadLocal<>();
-    private static final Map<Object, ContextCapabilities> capability_cache = new WeakHashMap<>();
 
     public static ContextCapabilities getCapabilities() {
         ContextCapabilities caps = getCapabilitiesImpl();
@@ -64,44 +62,15 @@ public class GLContext {
         return caps;
     }
 
-    // Actually check if any of these lwjgl2 optimizations are working since im
-    // pretty sure ThreadLocal by itself is faster since thread local should be right on the cpu register.
-    private static ContextCapabilities getCapabilitiesImpl() {
-        CapabilitiesCacheEntry recent_cache_entry = fast_path_cache;
-        // Check owner of cache entry
-        if (recent_cache_entry.owner == Thread.currentThread()) {
-            /* The owner ship test succeeded, so the cache must contain the current ContextCapabilities instance
-             * assert recent_cache_entry.capabilities == getThreadLocalCapabilities();
-             */
-            return recent_cache_entry.capabilities;
-        } else // Some other thread has written to the cache since, and we fall back to the slower path
-            return getThreadLocalCapabilities();
+    private static @Nullable ContextCapabilities getCapabilitiesImpl() {
+        return getThreadLocalCapabilities();
     }
 
-    static ContextCapabilities getCapabilities(Object context) {
-        return capability_cache.get(context);
-    }
-
-    private static ContextCapabilities getThreadLocalCapabilities() {
+    private static @Nullable ContextCapabilities getThreadLocalCapabilities() {
         return current_capabilities.get();
     }
 
     static void setCapabilities(ContextCapabilities capabilities) {
         current_capabilities.set(capabilities);
-
-        CapabilitiesCacheEntry thread_cache_entry = thread_cache_entries.get();
-        if (thread_cache_entry == null) {
-            thread_cache_entry = new CapabilitiesCacheEntry();
-            thread_cache_entries.set(thread_cache_entry);
-        }
-        thread_cache_entry.owner = Thread.currentThread();
-        thread_cache_entry.capabilities = capabilities;
-
-        fast_path_cache = thread_cache_entry;
-    }
-
-    private static final class CapabilitiesCacheEntry {
-        Thread owner;
-        ContextCapabilities capabilities;
     }
 }

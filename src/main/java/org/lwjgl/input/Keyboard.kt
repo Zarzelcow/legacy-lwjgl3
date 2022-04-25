@@ -38,7 +38,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentLinkedDeque
 
 // This class is quite hard to attribute since it's a copy of LWJGL's implementation with heavy modifications to make
-// it work with LWJGL3, but I also changed a sizeable amount so all 3 ¯\_(ツ)_/¯
+// it work with LWJGL3, but I also changed a sizeable amount so all 3 why not ¯\_(ツ)_/¯
 /**
  * @author Created by gudenau on 5/31/2017.
  *

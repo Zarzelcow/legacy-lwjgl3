@@ -2,7 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   "package": "com.github.zarzelcow.legacylwjgl3.mixin",
-  "plugin": "com.github.zarzelcow.legacylwjgl3.Plugin",
+  "plugin": "com.github.zarzelcow.legacylwjgl3.EarlyRiserLoader",
   "compatibilityLevel": "JAVA_8",
   "client": [
     "MixinMinecraftFixEarlyCrashNoReports"

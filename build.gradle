@@ -46,9 +46,6 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    // Only available for 1.8.9 as of March 20 of 2022.
-    // Fabric API provides hooks for events, item registration, and more. As most mods will need this, it's included by default.
-    // If you know for a fact you don't, it's not required and can be safely removed.
     implementation("org.javassist:javassist:3.28.0-GA")
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
 
