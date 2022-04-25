@@ -36,7 +36,12 @@ switch (OperatingSystem.current()) {
         break
 }
 
+repositories {
+   maven { url 'https://jitpack.io' }
+}
+
 dependencies {
+    implementation "com.github.Zarzelcow:legacy-lwjgl3:-SNAPSHOT"
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
 
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
