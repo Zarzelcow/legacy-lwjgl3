@@ -40,7 +40,7 @@ repositories {
 }
 
 dependencies {
-    implementation "com.github.Zarzelcow:legacy-lwjgl3:-SNAPSHOT"
+    modImplementation "com.github.Zarzelcow:legacy-lwjgl3:main-SNAPSHOT"
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
 
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
