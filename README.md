@@ -61,11 +61,11 @@ configurations.all {
  TODO... Btw users need to remove lwjgl2 from their classpath by hand as of now
  
 # Performance Increases?
-While increasing performance was not the main point you do very much so benefit from LWJGl 3's quite substantial performance
-bump of about 20 fps even while having to emulate a lot of lwjgl 2 code that got removed.
+While increasing performance was not the main point you do very much do see a benefit from LWJGl 3's quite substantial performance increase,
+resulting in a bump of about 20 fps (for me) even while having to emulate a lot of lwjgl 2 code that got removed.
 
 ![results](.github/results.png) <br>
-The settings to used are about what you would expect
+The settings used
 ```yaml
 JDK: temurin-17 (Adopt OpenJDK Hotspot 17)
 JVM Options:
