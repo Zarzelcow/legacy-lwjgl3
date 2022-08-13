@@ -93,6 +93,7 @@ object Mouse {
         scrollCallback = GLFWScrollCallback.create { window1: Long, xoffset: Double, yoffset: Double ->
             if (window1 == window) {
                 eventQueue.add(MouseEvent(yoffset))
+                dwheel += yoffset.toInt()
             }
         }
         glfwSetScrollCallback(window, scrollCallback)
@@ -117,10 +118,10 @@ object Mouse {
 
     @JvmStatic
     val y: Int
-        get() = Display.height - 1 - max(
+        get() = Display.height - max(
             0,
             min(
-                Display.height - 1,
+                Display.height,
                 MouseEvent.lastY.toInt()
             )
         )
@@ -174,6 +175,14 @@ object Mouse {
             deltaY = 0
             return y
         }
+
+    private var dwheel = 0
+    @JvmStatic
+    fun getDWheel(): Int {
+        val result: Int = dwheel
+        dwheel = 0
+        return result
+    }
 
     @JvmStatic
     val eventX: Int
