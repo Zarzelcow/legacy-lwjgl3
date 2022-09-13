@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version "0.12-SNAPSHOT" // To use chocoloom, change the version to a commit hash
+    id 'fabric-loom' version "1.0-SNAPSHOT" // To use chocoloom, change the version to a commit hash
     id 'maven-publish'
     id "org.jetbrains.kotlin.jvm" version "1.6.10"
 }
@@ -17,11 +17,13 @@ repositories {
         url = "https://maven.legacyfabric.net"
     }
     maven { url "https://jitpack.io" }
+    mavenCentral()
 }
 
 loom {
     setIntermediaryUrl('https://maven.legacyfabric.net/net/fabricmc/intermediary/%1$s/intermediary-%1$s-v2.jar');
-    customMinecraftManifest.set("https://meta.legacyfabric.net/v2/manifest/${minecraft_version}")
+    // Only needed for versions not available from vanilla launcher by default.
+    // customMinecraftManifest.set("https://meta.legacyfabric.net/v2/manifest/${minecraft_version}")
 
     // Required by 1.7.x
     // runs {
@@ -44,9 +46,11 @@ switch (OperatingSystem.current()) {
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    mappings "net.legacyfabric:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    implementation("org.javassist:javassist:3.28.0-GA")
+
+    implementation("org.apache.logging.log4j:log4j-core:2.18.0")
+    implementation('org.javassist:javassist:3.29.1-GA')
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
 
     implementation "org.lwjgl:lwjgl"
@@ -94,14 +98,7 @@ java {
     // If you remove this line, sources will not be generated.
     withSourcesJar()
 }
-remapJar {
-    // remove lwjgl from classpath because remapJar fails if it's present
-    // because of an unsupported class version error in asm that im not sure why it happens
-    classpath.from = classpath.filter {
-        !it.name.contains("lwjgl")
-    }
-    System.out.println(classpath)
-}
+
 jar {
     from("LICENSE") {
         rename { "${it}_${project.archivesBaseName}" }
@@ -119,6 +116,6 @@ publishing {
     // select the repositories you want to publish to
     repositories {
         // uncomment to publish to the local maven
-        mavenLocal()
+        // mavenLocal()
     }
 }
