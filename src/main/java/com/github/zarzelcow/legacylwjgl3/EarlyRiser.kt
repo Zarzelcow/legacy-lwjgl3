@@ -16,7 +16,7 @@ import org.lwjgl.opengl.GL
  */
 class EarlyRiser : Runnable {
     override fun run() {
-        LegacyLWJGL3.LOGGER.info("EarlyRiser running")
+        LegacyLWJGL3.LOGGER.debug("EarlyRiser running")
         val pool = ClassPool.getDefault()
         macroRedefineWithErrorHandling(pool, ::addMissingGLCapabilities)
         macroRedefineWithErrorHandling(pool, ::addLegacyCompatibilityMethodsToGL11)
