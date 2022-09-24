@@ -3,7 +3,6 @@
 build/
 out/
 classes/
-gradlew*
 
 # eclipse
 *.launch
