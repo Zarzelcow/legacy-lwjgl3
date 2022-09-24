@@ -21,7 +21,7 @@ repositories {
 }
 
 loom {
-    setIntermediaryUrl('https://maven.legacyfabric.net/net/fabricmc/intermediary/%1$s/intermediary-%1$s-v2.jar');
+    setIntermediaryUrl('https://maven.legacyfabric.net/net/fabricmc/intermediary/%1$s/intermediary-%1$s-v2.jar')
     // Only needed for versions not available from vanilla launcher by default.
     // customMinecraftManifest.set("https://meta.legacyfabric.net/v2/manifest/${minecraft_version}")
 
@@ -34,6 +34,7 @@ loom {
 }
 
 import org.gradle.internal.os.OperatingSystem
+
 project.ext.lwjglVersion = "3.3.1"
 switch (OperatingSystem.current()) {
     case OperatingSystem.LINUX:
@@ -115,6 +116,6 @@ publishing {
     // select the repositories you want to publish to
     repositories {
         // uncomment to publish to the local maven
-        // mavenLocal()
+        mavenLocal()
     }
 }
