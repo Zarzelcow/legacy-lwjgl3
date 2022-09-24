@@ -32,7 +32,8 @@
 package org.lwjgl.input
 
 import org.lwjgl.glfw.GLFW
-import org.lwjgl.glfw.GLFW.GLFW_MOD_SHIFT
+import org.lwjgl.glfw.GLFW.GLFW_REPEAT
+import org.lwjgl.glfw.GLFWCharCallback
 import org.lwjgl.glfw.GLFWKeyCallback
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedDeque
@@ -54,6 +55,7 @@ object Keyboard {
     private var latestEvent: KeyEvent? = null
     private var windowHandle: Long = -1
     var keyCallback: GLFWKeyCallback? = null
+    var charCallback: GLFWCharCallback? = null
 
     @JvmStatic
     fun getKeyName(key: Int): String? {
@@ -72,11 +74,17 @@ object Keyboard {
         destroy()
         windowHandle = handle
         keyCallback = GLFWKeyCallback.create { window: Long, key: Int, scancode: Int, action: Int, mods: Int ->
+            if (windowHandle == window && action != GLFW_REPEAT) {
+                eventQueue.add(KeyEvent(key, scancode, action, mods, 0))
+            }
+        }
+        charCallback = GLFWCharCallback.create { window, codepoint ->
             if (windowHandle == window) {
-                eventQueue.add(KeyEvent(key, scancode, action, mods))
+                eventQueue.add(KeyEvent(0, 0, GLFW.GLFW_PRESS, 0, codepoint))
             }
         }
         GLFW.glfwSetKeyCallback(windowHandle, keyCallback)
+        GLFW.glfwSetCharCallback(windowHandle, charCallback)
     }
 
     fun destroy() {
@@ -130,44 +138,7 @@ object Keyboard {
 
     @JvmStatic
     val eventCharacter: Char
-        get() = (if (latestEvent == null) 0 else latestEvent!!.character) as Char
-
-    fun getCharacter(key: Int, modifiers: Int): Char {
-        if (key > LWJGLChars.size) {
-            return '\u0000'
-        }
-        val character: Char = LWJGLChars[key]
-        if (modifiers and GLFW_MOD_SHIFT != 0) {
-            if (Character.isAlphabetic(character.code)) {
-                return character.uppercaseChar()
-            } else {
-                when (character) {
-                    '`' -> return '~'
-                    '-' -> return '_'
-                    '=' -> return '+'
-                    '\\' -> return '|'
-                    '[' -> return '{'
-                    ']' -> return '}'
-                    ';' -> return ':'
-                    '\'' -> return '"'
-                    ',' -> return '<'
-                    '.' -> return '>'
-                    '/' -> return '?'
-                    '1' -> return '!'
-                    '2' -> return '@'
-                    '3' -> return '#'
-                    '4' -> return '$'
-                    '5' -> return '%'
-                    '6' -> return '^'
-                    '7' -> return '&'
-                    '8' -> return '*'
-                    '9' -> return '('
-                    '0' -> return ')'
-                }
-            }
-        }
-        return character
-    }
+        get() = (if (latestEvent == null) '\u0000' else latestEvent!!.character)
 
     fun translateKeyFromGLFW(key: Int): Int {
         return if (key != -1) {
@@ -187,18 +158,12 @@ object Keyboard {
         LWJGL2GLFW[lwjgl] = glfw
         keyNames[lwjgl] = name
         keyMap[name] = lwjgl
-        if (name.length == 1) {
-            LWJGLChars[lwjgl] = name.single().lowercaseChar()
-        } else {
-            LWJGLChars[lwjgl] = '\u0000'
-        }
         return lwjgl
     }
 
     const val KEYBOARD_SIZE = GLFW.GLFW_KEY_LAST + 1
     private val GLFW2LWJGL = IntArray(KEYBOARD_SIZE)
     private val LWJGL2GLFW = IntArray(KEYBOARD_SIZE)
-    private val LWJGLChars = CharArray(KEYBOARD_SIZE)
     private val keyNames = arrayOfNulls<String>(KEYBOARD_SIZE)
     private val keyMap: MutableMap<String, Int> = HashMap()
 
@@ -326,22 +291,8 @@ object Keyboard {
     @JvmField val KEY_RMETA = register("RMETA", GLFW.GLFW_KEY_RIGHT_SUPER, 220)
     @JvmField val KEY_MENU = register("MENU", GLFW.GLFW_KEY_MENU, 348)
     // @formatter:on
-    init {
-        LWJGLChars[KEY_SPACE] = ' '
-        LWJGLChars[KEY_APOSTROPHE] = '\''
-        LWJGLChars[KEY_COMMA] = ','
-        LWJGLChars[KEY_MINUS] = '-'
-        LWJGLChars[KEY_PERIOD] = '.'
-        LWJGLChars[KEY_SLASH] = '/'
-        LWJGLChars[KEY_SEMICOLON] = ';'
-        LWJGLChars[KEY_EQUALS] = '='
-        LWJGLChars[KEY_LBRACKET] = '['
-        LWJGLChars[KEY_BACKSLASH] = '\\'
-        LWJGLChars[KEY_RBRACKET] = ']'
-        LWJGLChars[KEY_GRAVE] = '`'
-    }
 
-    class KeyEvent(key: Int, scancode: Int, action: Int, mods: Int) {
+    class KeyEvent(key: Int, scancode: Int, action: Int, mods: Int, codepoint: Int) {
         val key: Int
         val scancode: Int
         val action: Int
@@ -353,7 +304,7 @@ object Keyboard {
             this.scancode = scancode
             this.action = action
             this.mods = mods
-            character = getCharacter(this.key, mods)
+            this.character = Char(codepoint)
         }
     }
 }
