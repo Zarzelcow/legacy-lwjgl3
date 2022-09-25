@@ -1,12 +1,16 @@
 package org.lwjgl.opengl
 
-import org.lwjgl.glfw.GLFWWindowSizeCallback
+import org.lwjgl.BufferUtils
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
-import org.lwjgl.system.MemoryUtil
+import org.lwjgl.glfw.GLFWImage
+import org.lwjgl.glfw.GLFWWindowSizeCallback
 import org.lwjgl.input.Keyboard
 import org.lwjgl.input.Mouse
+import org.lwjgl.system.MemoryUtil
 import java.nio.ByteBuffer
+import kotlin.math.sqrt
+
 
 object Display {
     @JvmStatic
@@ -35,10 +39,47 @@ object Display {
      get() { return availableDisplayModes.maxByOrNull { it.width * it.height } }
     private var window_resized = false
     private var sizeCallback: GLFWWindowSizeCallback? = null
+
+    private var cached_icons: Array<ByteBuffer>? = null
     @JvmStatic
     fun setIcon(icons: Array<ByteBuffer>): Int {
-        // TODO implement this
-        return 0;
+        // LWJGL2 doesn't enforce this to be called after window creation,
+        // meaning you have to keep hold the icons to use them when the window is created
+        if (!this.cached_icons.contentEquals(icons)) {
+            // you have to also clone the byte buffers to avoid seg faults from them being freed
+            cached_icons = icons.map { cloneByteBuffer(it) }.toTypedArray()
+        }
+
+        if (this.isCreated) {
+            GLFW.glfwSetWindowIcon(this.handle, iconsToGLFWBuffer(this.cached_icons!!))
+            return 1
+        } else {
+            return 0
+        }
+    }
+
+
+    private fun cloneByteBuffer(original: ByteBuffer): ByteBuffer {
+        // code taken from LWJGL2' Display.java
+        val clone = BufferUtils.createByteBuffer(original.capacity())
+        val old_position = original.position()
+        clone.put(original)
+        original.position(old_position)
+        clone.flip()
+
+        return clone
+    }
+    private fun iconsToGLFWBuffer(icons: Array<ByteBuffer>): GLFWImage.Buffer {
+        val buffer = GLFWImage.create(icons.size)
+        icons.forEach { icon ->
+            val size: Int = icon.limit() / 4
+            val dimension = sqrt(size.toDouble()).toInt()
+            GLFWImage.malloc().use { image ->
+                buffer.put(image.set(dimension, dimension, icon))
+            }
+        }
+        buffer.flip()
+        return buffer
     }
 
     @JvmStatic
@@ -69,6 +110,9 @@ object Display {
         Mouse.setWindow(handle)
         Keyboard.setWindow(handle)
         GLFW.glfwShowWindow(handle)
+        if (this.cached_icons != null) {
+            this.setIcon(this.cached_icons!!)
+        }
     }
 
     @JvmStatic
