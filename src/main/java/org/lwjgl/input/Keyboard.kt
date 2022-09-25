@@ -32,7 +32,6 @@
 package org.lwjgl.input
 
 import org.lwjgl.glfw.GLFW
-import org.lwjgl.glfw.GLFW.GLFW_REPEAT
 import org.lwjgl.glfw.GLFWCharCallback
 import org.lwjgl.glfw.GLFWKeyCallback
 import java.util.*
@@ -74,7 +73,7 @@ object Keyboard {
         destroy()
         windowHandle = handle
         keyCallback = GLFWKeyCallback.create { window: Long, key: Int, scancode: Int, action: Int, mods: Int ->
-            if (windowHandle == window && action != GLFW_REPEAT) {
+            if (windowHandle == window) {
                 eventQueue.add(KeyEvent(key, scancode, action, mods, 0))
             }
         }
