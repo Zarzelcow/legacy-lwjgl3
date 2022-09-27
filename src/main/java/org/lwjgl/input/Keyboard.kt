@@ -79,7 +79,7 @@ object Keyboard {
         }
         charCallback = GLFWCharCallback.create { window, codepoint ->
             if (windowHandle == window) {
-                eventQueue.add(KeyEvent(0, 0, GLFW.GLFW_PRESS, 0, codepoint))
+                eventQueue.add(KeyEvent(-1, -1, GLFW.GLFW_PRESS, 0, codepoint))
             }
         }
         GLFW.glfwSetKeyCallback(windowHandle, keyCallback)
@@ -140,11 +140,7 @@ object Keyboard {
         get() = (if (latestEvent == null) '\u0000' else latestEvent!!.character)
 
     fun translateKeyFromGLFW(key: Int): Int {
-        return if (key != -1) {
-            if (key < GLFW2LWJGL.size) GLFW2LWJGL[key] else CHAR_NONE
-        } else {
-            0
-        }
+        return if (key in GLFW2LWJGL.indices) GLFW2LWJGL[key] else key
     }
 
     fun translateKeyToGLFW(key: Int): Int {
