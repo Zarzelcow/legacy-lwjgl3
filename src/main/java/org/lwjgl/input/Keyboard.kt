@@ -168,7 +168,7 @@ object Keyboard {
 
     // @formatter:off
     @JvmField val CHAR_NONE = '\u0000'.code
-    @JvmField val KEY_NONE = 0x00
+    @JvmField val KEY_NONE = register("NONE", 0x00, 0x00)
     @JvmField val KEY_SPACE = register("SPACE", GLFW.GLFW_KEY_SPACE, 57)
     @JvmField val KEY_APOSTROPHE = register("APOSTROPHE", GLFW.GLFW_KEY_APOSTROPHE, 40)
     @JvmField val KEY_COMMA = register("COMMA", GLFW.GLFW_KEY_COMMA, 51)
