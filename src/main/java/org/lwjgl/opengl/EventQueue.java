@@ -29,69 +29,55 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.lwjgl;
-
-import java.awt.*;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+package org.lwjgl.opengl;
 
 /**
- * Created by gudenau on 5/30/2017.
- * <p>
- * LWJGL3
+ * A java implementation of a LWJGL compatible event queue.
+ * @author elias_naur
  */
-public class Sys {
-    private static final long timerOffset;
-    public static final String VERSION = Version.getVersion();
 
-    private Sys() {
+import java.nio.ByteBuffer;
+
+public class EventQueue {
+    private static final int QUEUE_SIZE = 200;
+
+    private final int event_size;
+
+    private final ByteBuffer queue;
+
+    public EventQueue(int event_size) {
+        this.event_size = event_size;
+        this.queue = ByteBuffer.allocate(QUEUE_SIZE*event_size);
     }
 
-
-    static {
-        timerOffset = System.nanoTime();
-    }
-
-    /**
-     * Obtains the number of ticks that the hires timer does in a second.
-     *
-     * @return timer resolution in ticks per second.
-     */
-    public static long getTimerResolution() {
-        return 1000000000;
-    }
-
-    /**
-     * Gets the current value of the hires timer, in ticks. When the Sys class is first loaded
-     * the hires timer is reset to 0. If no hires timer is present then this method will always
-     * return 0.<p><strong>NOTEZ BIEN</strong> that the hires timer WILL wrap around.
-     *
-     * @return the current hires time, in ticks (always >= 0)
-     */
-    public static long getTime() {
-        return (System.nanoTime() - timerOffset) & 0x7FFFFFFFFFFFFFFFL;
+    public synchronized void clearEvents() {
+        queue.clear();
     }
 
     /**
-     * Return the version of the core LWJGL libraries as a String.
+     * Copy available events into the specified buffer.
      */
-    public static String getVersion() {
-        return VERSION;
+    public synchronized void copyEvents(ByteBuffer dest) {
+        queue.flip();
+        int old_limit = queue.limit();
+        if (dest.remaining() < queue.remaining())
+            queue.limit(dest.remaining() + queue.position());
+        dest.put(queue);
+        queue.limit(old_limit);
+        queue.compact();
     }
 
     /**
-     * Initialization. This is just a dummy method to trigger the static constructor.
+     * Put an event into the queue.
+     * @return true if the event fitted into the queue, false otherwise
      */
-    public static void initialize() {
-    }
-
-    public static boolean openURL(String url) {
-        try {
-            Desktop.getDesktop().browse(new URI(url));
+    public synchronized boolean putEvent(ByteBuffer event) {
+        if (event.remaining() != event_size)
+            throw new IllegalArgumentException("Internal error: event size " + event_size + " does not equal the given event size " + event.remaining());
+        if (queue.remaining() >= event.remaining()) {
+            queue.put(event);
             return true;
-        } catch (IOException | URISyntaxException | UnsupportedOperationException e) {
+        } else
             return false;
-        }
     }
 }

@@ -85,6 +85,14 @@ object Display {
     @JvmStatic
     fun update() {
         window_resized = false
+        if ( Mouse.isCreated() ) {
+            Mouse.poll()
+//            Mouse.updateCursor();
+        }
+
+        if ( Keyboard.isCreated() ) {
+            Keyboard.poll()
+        }
         GLFW.glfwPollEvents()
         GLFW.glfwSwapBuffers(handle)
     }
@@ -107,8 +115,8 @@ object Display {
         // create general callbacks
         sizeCallback = GLFWWindowSizeCallback.create(Display::resizeCallback)
         GLFW.glfwSetWindowSizeCallback(handle, sizeCallback)
-        Mouse.setWindow(handle)
-        Keyboard.setWindow(handle)
+        Mouse.create()
+        Keyboard.create()
         GLFW.glfwShowWindow(handle)
         if (this.cached_icons != null) {
             this.setIcon(this.cached_icons!!)
@@ -160,7 +168,7 @@ object Display {
         destroyWindow()
         // Terminate GLFW and free the error callback
         GLFW.glfwTerminate()
-        GLFW.glfwSetErrorCallback(null)!!.free()
+        GLFW.glfwSetErrorCallback(null)?.free()
     }
 
     @JvmStatic

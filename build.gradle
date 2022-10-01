@@ -50,7 +50,8 @@ dependencies {
     mappings "net.legacyfabric:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    implementation('org.javassist:javassist:3.29.1-GA')
+    implementation("it.unimi.dsi:fastutil-core:8.5.9")
+    implementation("org.javassist:javassist:3.29.2-GA")
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
 
     implementation "org.lwjgl:lwjgl"
