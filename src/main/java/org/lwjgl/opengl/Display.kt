@@ -8,6 +8,7 @@ import org.lwjgl.glfw.GLFWWindowSizeCallback
 import org.lwjgl.input.Keyboard
 import org.lwjgl.input.Mouse
 import org.lwjgl.system.MemoryUtil
+import java.nio.Buffer
 import java.nio.ByteBuffer
 import kotlin.math.sqrt
 
@@ -64,8 +65,10 @@ object Display {
         val clone = BufferUtils.createByteBuffer(original.capacity())
         val old_position = original.position()
         clone.put(original)
-        original.position(old_position)
-        clone.flip()
+        // if compiled with java 11+ calls ByteBuffer.position/ByteBuffer.flip however java <= 8 doesnt have these
+        // methods and instead compiles as calls to Buffer.position/Buffer.flip causing crashes on those java versions
+        (original as Buffer).position(old_position)
+        (clone as Buffer).flip()
 
         return clone
     }

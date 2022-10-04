@@ -1,9 +1,7 @@
 package com.github.zarzelcow.legacylwjgl3
 
-import javassist.ClassPool
-import javassist.CtField
-import javassist.CtMethod
-import javassist.CtNewMethod
+import javassist.*
+import javassist.util.proxy.DefineClassHelper
 import org.lwjgl.openal.ALCapabilities
 import org.lwjgl.opengl.GL
 
@@ -60,7 +58,7 @@ class EarlyRiser : Runnable {
                             GL_EXT_vertex_weighting = ext.contains("GL_EXT_vertex_weighting");
                         """.trimIndent()
                     )
-                    this.toClass(GL::class.java)
+                    defineCtClass(this, GL::class.java, classPool.classLoader)
                 }
                 Either.Right(1)
             } catch (e: Exception) {
@@ -109,7 +107,7 @@ class EarlyRiser : Runnable {
                     cc.addMethod(copied.rename(legacy))
                     debug("Added legacy compat method $legacy")
                 }
-                cc.toClass(GL::class.java)
+                defineCtClass(cc, GL::class.java, classPool.classLoader)
                 Either.Right(1)
             } catch (e: Exception) {
                 Either.Left(e)
@@ -130,7 +128,7 @@ class EarlyRiser : Runnable {
             """.trimIndent()
             return try {
                 cc.addMethod(CtNewMethod.make(code, cc))
-                cc.toClass(GL::class.java)
+                defineCtClass(cc, GL::class.java, classPool.classLoader)
                 return Either.Right(1)
             } catch (e: Exception) {
                 Either.Left(e)
@@ -167,7 +165,7 @@ class EarlyRiser : Runnable {
                     target.addField(copied)
                     debug("Added AL extension field ${field.name}")
                 }
-                target.toClass(ALCapabilities::class.java)
+                defineCtClass(target, ALCapabilities::class.java, classPool.classLoader)
                 extension.detach()
                 return Either.Right(1)
             } catch (e: Exception) {
@@ -190,11 +188,23 @@ class EarlyRiser : Runnable {
                     cc.addMethod(copied.rename(legacy))
                     debug("Added legacy compat method $legacy")
                 }
-                cc.toClass(ALCapabilities::class.java)
+                defineCtClass(cc, ALCapabilities::class.java, classPool.classLoader)
                 Either.Right(1)
             } catch (e: Exception) {
                 Either.Left(e)
             }
+        }
+
+        // all the Javassist [CtClass.toClass] methods use new java features,
+        // DefineClassHelper.toClass has support for much older versions of java so use that instead
+        private fun defineCtClass(cc: CtClass, neighbor: Class<*>, classLoader: ClassLoader) {
+            DefineClassHelper.toClass(
+                cc.name,
+                neighbor,
+                classLoader,
+                null,
+                cc.toBytecode()
+            )
         }
 
         // Functional programming helper "Either" based off of the arrow-kt library
