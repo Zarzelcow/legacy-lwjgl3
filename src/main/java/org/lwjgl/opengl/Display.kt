@@ -126,11 +126,65 @@ object Display {
         }
     }
 
+    /**
+     * This is a shit code snippet, but at least it works.
+     */
     @JvmStatic
     fun setFullscreen(fullscreen: Boolean) {
         println("setFullscreen: $fullscreen")
+        runCatching {
+            this.resizeCallback(handle, displayMode.width, displayMode.height)
+            if (fullscreen) {
+                var monitor = GLFW.glfwGetPrimaryMonitor()
+
+                GLFW.glfwSetWindowMonitor(
+                    handle,
+                    monitor,
+                    0,
+                    0,
+                    width,
+                    height,
+                    displayMode.frequency
+                )
+
+                GLFW.glfwSetWindowSize(handle, width, height)
+            } else {
+
+                GLFW.glfwSetWindowMonitor(
+                    handle,
+                    0L,
+                    20,// need a xPos
+                    20,// need a yPos
+                    width,
+                    height,
+                    -1
+                )
+                GLFW.glfwSetWindowSize(handle, width, height)
+            }
+        }.onFailure {
+            it.printStackTrace()
+        }
     }
 
+    @JvmStatic
+    fun updateFullscreen() {
+
+    }
+    @JvmStatic
+    fun setMode() {
+
+    }
+
+    @JvmStatic
+    fun updateDisplay() {
+        Display.flipFrame()
+    }
+    @JvmStatic
+    fun flipFrame() {
+        GLFW.glfwPollEvents()
+        GLFW.glfwSwapBuffers(handle)
+        GLFW.glfwPollEvents()
+    }
     @JvmStatic
     val availableDisplayModes: Array<DisplayMode>
         get() {
