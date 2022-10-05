@@ -71,7 +71,8 @@ public class GLFWKeyboardImplementation implements KeyboardImplementation {
     }
 
     public static int translateKeyFromGLFW(int key) {
-        if (key < GLFW2LWJGL.length) return GLFW2LWJGL[key];
+        if (key == -1) return GLFW2LWJGL[0];
+        else if (key < GLFW2LWJGL.length) return GLFW2LWJGL[key];
         else return key;
     }
 
