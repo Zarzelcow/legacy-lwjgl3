@@ -165,26 +165,6 @@ object Display {
             it.printStackTrace()
         }
     }
-
-    @JvmStatic
-    fun updateFullscreen() {
-
-    }
-    @JvmStatic
-    fun setMode() {
-
-    }
-
-    @JvmStatic
-    fun updateDisplay() {
-        Display.flipFrame()
-    }
-    @JvmStatic
-    fun flipFrame() {
-        GLFW.glfwPollEvents()
-        GLFW.glfwSwapBuffers(handle)
-        GLFW.glfwPollEvents()
-    }
     @JvmStatic
     val availableDisplayModes: Array<DisplayMode>
         get() {
