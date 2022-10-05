@@ -146,8 +146,6 @@ object Display {
                     height,
                     displayMode.frequency
                 )
-
-                GLFW.glfwSetWindowSize(handle, width, height)
             } else {
 
                 GLFW.glfwSetWindowMonitor(
@@ -159,8 +157,8 @@ object Display {
                     height,
                     -1
                 )
-                GLFW.glfwSetWindowSize(handle, width, height)
             }
+            GLFW.glfwSetWindowSize(handle, width, height)
         }.onFailure {
             it.printStackTrace()
         }
