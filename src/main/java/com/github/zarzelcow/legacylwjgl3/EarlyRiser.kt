@@ -2,6 +2,7 @@ package com.github.zarzelcow.legacylwjgl3
 
 import javassist.*
 import javassist.util.proxy.DefineClassHelper
+import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import org.lwjgl.openal.ALCapabilities
 import org.lwjgl.opengl.GL
 
@@ -15,7 +16,9 @@ import org.lwjgl.opengl.GL
 class EarlyRiser : Runnable {
     override fun run() {
         LegacyLWJGL3.LOGGER.debug("EarlyRiser running")
-        val pool = ClassPool.getDefault()
+        val pool = ClassPool()
+        pool.appendClassPath(LoaderClassPath(FabricLauncherBase.getLauncher().targetClassLoader)) // knot class loader contains the fat jar with lwjgl 3 bundled
+
         macroRedefineWithErrorHandling(pool, ::addMissingGLCapabilities)
         macroRedefineWithErrorHandling(pool, ::addLegacyCompatibilityMethodsToGL11)
         macroRedefineWithErrorHandling(pool, ::gl20AddCompatibilityMethods)
@@ -23,32 +26,30 @@ class EarlyRiser : Runnable {
         macroRedefineWithErrorHandling(pool, ::addLegacyCompatibilityMethodsToAL10)
     }
 
-    // helper function to increase code readability
-    private inline fun macroRedefineWithErrorHandling(pool: ClassPool, method: (ClassPool) -> Either<Exception, Int>) {
-        when (val result = method(pool)) {
-            is Either.Left -> {
-                LegacyLWJGL3.LOGGER.error("Failed in early riser while attempting to do hacky things")
-                result.value.printStackTrace()
-            }
-            is Either.Right -> Unit // noop since we're good
+    // rather than handling errors is every method manually, this will do it for you
+    private inline fun macroRedefineWithErrorHandling(pool: ClassPool, method: (ClassPool) -> Unit) {
+        try {
+            method(pool)
+        } catch (e: Exception) {
+            LegacyLWJGL3.LOGGER.error("Failed in early riser while attempting to do hacky things", e)
         }
     }
 
     companion object {
         // Adds missing extension checks from LWJGL2 for use in ContextCapabilities
-        private fun addMissingGLCapabilities(classPool: ClassPool): Either<Exception, Int> {
-            return try {
-                with(classPool.get("org.lwjgl.opengl.GLCapabilities")) {
-                    this.addField(CtField.make("public final boolean GL_EXT_multi_draw_arrays;", this))
-                    this.addField(CtField.make("public final boolean GL_EXT_paletted_texture;", this))
-                    this.addField(CtField.make("public final boolean GL_EXT_rescale_normal;", this))
-                    this.addField(CtField.make("public final boolean GL_EXT_texture_3d;", this))
-                    this.addField(CtField.make("public final boolean GL_EXT_texture_lod_bias;", this))
-                    this.addField(CtField.make("public final boolean GL_EXT_vertex_shader;", this))
-                    this.addField(CtField.make("public final boolean GL_EXT_vertex_weighting;", this))
-                    val constructor = this.getConstructor("(Lorg/lwjgl/system/FunctionProvider;Ljava/util/Set;ZLjava/util/function/IntFunction;)V")
-                    constructor.insertAfter(
-                        """
+        private fun addMissingGLCapabilities(classPool: ClassPool) {
+            with(classPool.get("org.lwjgl.opengl.GLCapabilities")) {
+                this.addField(CtField.make("public final boolean GL_EXT_multi_draw_arrays;", this))
+                this.addField(CtField.make("public final boolean GL_EXT_paletted_texture;", this))
+                this.addField(CtField.make("public final boolean GL_EXT_rescale_normal;", this))
+                this.addField(CtField.make("public final boolean GL_EXT_texture_3d;", this))
+                this.addField(CtField.make("public final boolean GL_EXT_texture_lod_bias;", this))
+                this.addField(CtField.make("public final boolean GL_EXT_vertex_shader;", this))
+                this.addField(CtField.make("public final boolean GL_EXT_vertex_weighting;", this))
+                val constructor =
+                    this.getConstructor("(Lorg/lwjgl/system/FunctionProvider;Ljava/util/Set;ZLjava/util/function/IntFunction;)V")
+                constructor.insertAfter(
+                    """
                             GL_EXT_multi_draw_arrays = ext.contains("GL_EXT_multi_draw_arrays");
                             GL_EXT_paletted_texture = ext.contains("GL_EXT_paletted_texture");
                             GL_EXT_rescale_normal = ext.contains("GL_EXT_rescale_normal");
@@ -57,12 +58,8 @@ class EarlyRiser : Runnable {
                             GL_EXT_vertex_shader = ext.contains("GL_EXT_vertex_shader");
                             GL_EXT_vertex_weighting = ext.contains("GL_EXT_vertex_weighting");
                         """.trimIndent()
-                    )
-                    defineCtClass(this, GL::class.java, classPool.classLoader)
-                }
-                Either.Right(1)
-            } catch (e: Exception) {
-                Either.Left(e)
+                )
+                defineCtClass(this, GL::class.java, classPool.classLoader)
             }
         }
 
@@ -77,45 +74,31 @@ class EarlyRiser : Runnable {
             Triple("glTexEnv", "glTexEnvfv", "(IILjava/nio/FloatBuffer;)V")
         )
 
-        // same reason as above
         private val al10Translations = listOf(
             Triple("alListener", "alListenerfv", "(ILjava/nio/FloatBuffer;)V"),
             Triple("alSource", "alSourcefv", "(IILjava/nio/FloatBuffer;)V"),
             Triple("alSourceStop", "alSourceStopv", "(Ljava/nio/IntBuffer;)V")
         )
 
-        private fun CtMethod.rename(legacy: String): CtMethod {
-            this.name = legacy
-            return this
-        }
-
-        private fun debug(message: String) = LegacyLWJGL3.LOGGER.debug(message)
-
-
         /*
          * Adds a few legacy methods to GL11 like glGetFloat which was renamed to glGetFloatv in LWJGL3
          */
-        fun addLegacyCompatibilityMethodsToGL11(classPool: ClassPool): Either<Exception, Int> {
+        fun addLegacyCompatibilityMethodsToGL11(classPool: ClassPool) {
             val cc = classPool.get("org.lwjgl.opengl.GL11")
-            return try {
-                for ((legacy, current, desc) in gl11Translations) {
-                    val original = cc.getMethod(current, desc)
-                    // copy original method and rename it
-                    val copied = CtNewMethod.copy(original, cc, null)
-                    copied.name = legacy
+            for ((legacy, current, desc) in gl11Translations) {
+                val original = cc.getMethod(current, desc)
+                // copy original method and rename it
+                val renamed = CtNewMethod.copy(original, cc, null)
+                    .rename(legacy)
 
-                    cc.addMethod(copied.rename(legacy))
-                    debug("Added legacy compat method $legacy")
-                }
-                defineCtClass(cc, GL::class.java, classPool.classLoader)
-                Either.Right(1)
-            } catch (e: Exception) {
-                Either.Left(e)
+                cc.addMethod(renamed)
+                debug("Added legacy compat method $legacy")
             }
+            defineCtClass(cc, GL::class.java, classPool.classLoader)
         }
 
         // new GL20 doesn't have a way to supply a shader source using ByteBuffer so this adds a method to do it
-        fun gl20AddCompatibilityMethods(classPool: ClassPool): Either<Exception, Int> {
+        fun gl20AddCompatibilityMethods(classPool: ClassPool) {
             val cc = classPool.get("org.lwjgl.opengl.GL20")
             val code = """
                 public static void glShaderSource(int shader, java.nio.ByteBuffer string) {
@@ -126,74 +109,64 @@ class EarlyRiser : Runnable {
                     org.lwjgl.opengl.GL20.glShaderSource(shader, new String(data));
                 }
             """.trimIndent()
-            return try {
-                cc.addMethod(CtNewMethod.make(code, cc))
-                defineCtClass(cc, GL::class.java, classPool.classLoader)
-                return Either.Right(1)
-            } catch (e: Exception) {
-                Either.Left(e)
-            }
+            cc.addMethod(CtNewMethod.make(code, cc))
+            defineCtClass(cc, GL::class.java, classPool.classLoader)
         }
 
         /**
          * It copies all the methods and fields from the extension class to the real class
          */
-        fun copyAlExtensions(classPool: ClassPool): Either<Exception, Int> {
+        fun copyAlExtensions(classPool: ClassPool) {
             val extension = classPool.get("com.github.zarzelcow.legacylwjgl3.ALExtensions")
             val target = classPool.get("org.lwjgl.openal.AL")
-            return try {
-                // this code is hacky, but it replaces the stub method with the real one
-                target.getMethod("destroy", "()V")
-                    .rename("al_destroy") // rename destroy to al_destroy so it doesnt conflict
-                extension.removeMethod(
-                    extension.getMethod(
-                        "al_destroy",
-                        "()V"
-                    )
-                ) // remove stub method from extension so it calls the real one
+            // this code is hacky, but it replaces the stub method with the real one
+            target.getMethod("destroy", "()V")
+                .rename("al_destroy") // rename destroy to al_destroy so it doesnt conflict
+            extension.removeMethod(
+                extension.getMethod(
+                    "al_destroy",
+                    "()V"
+                )
+            ) // remove stub method from extension so it calls the real one
 
-                // copy methods and felds from cc to target
-                for (method in extension.declaredMethods) {
-                    val copied = CtNewMethod.copy(method, target, null)
-                    // dont add method if it already exists
-                    target.addMethod(copied)
-                    debug("Added AL extension method ${method.name}")
-                }
-
-                for (field in extension.declaredFields) {
-                    val copied = CtField(field, target)
-                    target.addField(copied)
-                    debug("Added AL extension field ${field.name}")
-                }
-                defineCtClass(target, ALCapabilities::class.java, classPool.classLoader)
-                extension.detach()
-                return Either.Right(1)
-            } catch (e: Exception) {
-                Either.Left(e)
+            // copy methods and felds from cc to target
+            for (method in extension.declaredMethods) {
+                val copied = CtNewMethod.copy(method, target, null)
+                // dont add method if it already exists
+                target.addMethod(copied)
+                debug("Added AL extension method ${method.name}")
             }
+
+            for (field in extension.declaredFields) {
+                val copied = CtField(field, target)
+                target.addField(copied)
+                debug("Added AL extension field ${field.name}")
+            }
+            defineCtClass(target, ALCapabilities::class.java, classPool.classLoader)
         }
 
         /**
          * Adds legacy compatibility methods to AL10
          */
-        fun addLegacyCompatibilityMethodsToAL10(classPool: ClassPool): Either<Exception, Int> {
+        fun addLegacyCompatibilityMethodsToAL10(classPool: ClassPool) {
             val cc = classPool.get("org.lwjgl.openal.AL10")
-            return try {
-                for ((legacy, current, desc) in al10Translations) {
-                    val original = cc.getMethod(current, desc)
-                    // copy original method and rename it
-                    val copied = CtNewMethod.copy(original, cc, null)
-                    copied.name = legacy
+            for ((legacy, current, desc) in al10Translations) {
+                val original = cc.getMethod(current, desc)
+                // copy original method and rename it
+                val copied = CtNewMethod.copy(original, cc, null)
+                cc.addMethod(copied.rename(legacy))
 
-                    cc.addMethod(copied.rename(legacy))
-                    debug("Added legacy compat method $legacy")
-                }
-                defineCtClass(cc, ALCapabilities::class.java, classPool.classLoader)
-                Either.Right(1)
-            } catch (e: Exception) {
-                Either.Left(e)
+                debug("Added legacy compat method $legacy")
             }
+            defineCtClass(cc, ALCapabilities::class.java, classPool.classLoader)
         }
+
+        private fun CtMethod.rename(legacy: String): CtMethod {
+            this.name = legacy
+            return this
+        }
+
+        private fun debug(message: String) = LegacyLWJGL3.LOGGER.debug(message)
 
         // all the Javassist [CtClass.toClass] methods use new java features,
         // DefineClassHelper.toClass has support for much older versions of java so use that instead
@@ -205,12 +178,7 @@ class EarlyRiser : Runnable {
                 null,
                 cc.toBytecode()
             )
-        }
-
-        // Functional programming helper "Either" based off of the arrow-kt library
-        open class Either<L, R> {
-            data class Left<L, R>(val value: L) : Either<L, R>()
-            data class Right<L, R>(val value: R) : Either<L, R>()
+            cc.detach()
         }
     }
 }

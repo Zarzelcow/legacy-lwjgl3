@@ -31,8 +31,6 @@
  */
 package org.lwjgl.input;
 
-
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
@@ -42,12 +40,13 @@ import org.lwjgl.opengl.Display;
 import com.github.zarzelcow.legacylwjgl3.implementation.input.InputImplementation;
 
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * @author Created by gudenau on 5/31/2017.
- * <p>
  * A raw Keyboard interface. This can be used to poll the current state of the
  * keys, or read all the keyboard presses / releases since the last read.
+ *
  * @author cix_foo <cix_foo@users.sourceforge.net>
  * @author elias_naur <elias_naur@users.sourceforge.net>
  * @author Brian Matzon <brian@matzon.dk>
@@ -423,7 +422,7 @@ public class Keyboard {
     }
 
     private static final String[] keyNames = new String[KEYBOARD_SIZE];
-    private static final Object2IntOpenHashMap<String> keyMap = new Object2IntOpenHashMap<>(253);
+    private static final Map<String, Integer> keyMap = new HashMap<>(253);
 
     public static final int CHAR_NONE = '\0';
     public static final int KEY_NONE = register("NONE", 0x00);
@@ -548,7 +547,4 @@ public class Keyboard {
     public static final int KEY_RMETA = register("RMETA", 220);
     public static final int KEY_MENU = register("MENU", 348);
 
-    static {
-        keyMap.defaultReturnValue(KEY_NONE);
-    }
 }

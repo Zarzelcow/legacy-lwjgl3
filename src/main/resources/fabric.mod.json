@@ -14,7 +14,7 @@
   },
   "license": "BSD-Zero",
   "icon": "assets/legacy-lwjgl3/icon.png",
-  "environment": "*",
+  "environment": "client",
   "entrypoints": {
     "main": [
       "com.github.zarzelcow.legacylwjgl3.LegacyLWJGL3"

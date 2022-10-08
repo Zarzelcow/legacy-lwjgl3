@@ -56,7 +56,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8") // dekotlinify soon :sob:
 
-    implementation("it.unimi.dsi:fastutil-core:8.5.9")
     implementation("org.javassist:javassist:3.29.2-GA")
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
 
@@ -109,13 +108,17 @@ jar {
 }
 
 shadowJar {
-    minimize()
+    minimize {
+        exclude(dependency("org.lwjgl:lwjgl:$lwjglVersion"))
+        exclude(dependency("org.lwjgl:lwjgl-glfw:$lwjglVersion"))
+        exclude(dependency("org.lwjgl:lwjgl-openal:$lwjglVersion"))
+        exclude(dependency("org.lwjgl:lwjgl-opengl:$lwjglVersion"))
+    }
     dependencies {
         include(dependency("org.jetbrains.kotlin:kotlin-stdlib"))
         include(dependency("org.jetbrains.kotlin:kotlin-stdlib-common"))
         include(dependency("org.jetbrains.kotlin:kotlin-stdlib-jdk7"))
         include(dependency("org.jetbrains.kotlin:kotlin-stdlib-jdk8"))
-        include(dependency("it.unimi.dsi:fastutil-core:8.5.9"))
         include(dependency("org.javassist:javassist:3.29.2-GA"))
 
         include(dependency("org.lwjgl:lwjgl:$lwjglVersion"))
@@ -130,8 +133,6 @@ task remapShadowJar(type: net.fabricmc.loom.task.RemapJarTask, dependsOn: shadow
     archiveFileName = "${archivesBaseName}-${project.version}-all-remapped.jar"
     addNestedDependencies = false
 }
-
-tasks.build.dependsOn(remapShadowJar)
 
 // configure the maven publication
 publishing {
