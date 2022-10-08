@@ -88,6 +88,7 @@ object Display {
     @JvmStatic
     fun update() {
         window_resized = false
+        GLFW.glfwPollEvents()
         if ( Mouse.isCreated() ) {
             Mouse.poll()
 //            Mouse.updateCursor();
@@ -96,7 +97,6 @@ object Display {
         if ( Keyboard.isCreated() ) {
             Keyboard.poll()
         }
-        GLFW.glfwPollEvents()
         GLFW.glfwSwapBuffers(handle)
     }
 
