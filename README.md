@@ -18,7 +18,9 @@ thanks as a big portion of this code is from that project.
 # Usage
 
 ## Dev Environments
-Just add this to your build.gradle to get it running in a dev environment
+First head over to https://jitpack.io/#Zarzelcow/legacy-lwjgl3 and select the latest version in commits
+
+then add this to your build.gradle replacing %VERSION% with the version of your choosing
 ```groovy
 ❯ build.gradle
 
@@ -40,7 +42,7 @@ repositories {
 }
 
 dependencies {
-    modImplementation "com.github.Zarzelcow:legacy-lwjgl3:main-SNAPSHOT"
+    modImplementation "com.github.Zarzelcow:legacy-lwjgl3:%VERSION%"
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
 
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
@@ -58,7 +60,16 @@ configurations.all {
 ```
 
 ## Clients
- TODO... Btw users need to remove lwjgl2 from their classpath by hand as of now
+ Shaded builds are not currently published, so you will have to build them yourself.
+
+ TLDR: `./gradlew remapShadowJar` then add `build/libs/*-all-remapped.jar` to your mods, done
+ <br>
+ <br>
+ <br>
+
+ Longer version: in the directory containing the file `build.gradle` run the command `./gradlew remapShadowJar`
+
+ this will create 2 new files in the folder `build/libs`, add the file ending with `-all-remapped.jar` to your list of mods and run the game
  
 # Performance Increases?
 While increasing performance was not the main point you do very much do see a benefit from LWJGl 3's quite substantial performance increase,
