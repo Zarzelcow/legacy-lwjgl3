@@ -36,6 +36,12 @@ object Display {
     var height = 0
 
     @JvmStatic
+    var xPos = 0
+
+    @JvmStatic
+    var yPos = 0
+
+    @JvmStatic
     val desktopDisplayMode: DisplayMode?
      get() { return availableDisplayModes.maxByOrNull { it.width * it.height } }
     private var window_resized = false
@@ -146,13 +152,16 @@ object Display {
                     height,
                     displayMode.frequency
                 )
+                xPos = displayMode.width / 2
+                yPos = displayMode.height / 2
             } else {
-
+                xPos -= width / 2
+                yPos -= height / 2
                 GLFW.glfwSetWindowMonitor(
                     handle,
                     0L,
-                    20,// need a xPos
-                    20,// need a yPos
+                    xPos,// need a xPos
+                    yPos,// need a yPos
                     width,
                     height,
                     -1
