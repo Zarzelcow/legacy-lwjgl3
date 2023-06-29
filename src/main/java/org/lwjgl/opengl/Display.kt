@@ -137,7 +137,6 @@ object Display {
      */
     @JvmStatic
     fun setFullscreen(fullscreen: Boolean) {
-        println("setFullscreen: $fullscreen")
         runCatching {
             this.resizeCallback(handle, displayMode.width, displayMode.height)
             if (fullscreen) {
@@ -247,4 +246,8 @@ object Display {
 
     @JvmStatic
     fun wasResized(): Boolean = window_resized
+
+    @JvmStatic
+    val isVisible: Boolean
+        get() = GLFW.glfwGetWindowAttrib(handle, GLFW.GLFW_VISIBLE) != 0;
 }

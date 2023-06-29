@@ -21,8 +21,9 @@ thanks as a big portion of this code is from that project.
 First head over to https://jitpack.io/#Zarzelcow/legacy-lwjgl3 and select the latest version in commits
 
 then add this to your build.gradle replacing %VERSION% with the version of your choosing
-```groovy
+
 ❯ build.gradle
+```groovy
 
 import org.gradle.internal.os.OperatingSystem
 

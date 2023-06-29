@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version "1.0-SNAPSHOT" // To use chocoloom, change the version to a commit hash
+    id 'fabric-loom' version "1.2.+"
     id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'maven-publish'
     id "org.jetbrains.kotlin.jvm" version "1.6.10"
@@ -36,7 +36,7 @@ loom {
 
 import org.gradle.internal.os.OperatingSystem
 
-project.ext.lwjglVersion = "3.3.1"
+project.ext.lwjglVersion = "3.3.2"
 switch (OperatingSystem.current()) {
     case OperatingSystem.LINUX:
         project.ext.lwjglNatives = "natives-linux"

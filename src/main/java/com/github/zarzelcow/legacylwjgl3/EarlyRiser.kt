@@ -21,7 +21,7 @@ class EarlyRiser : Runnable {
 
         macroRedefineWithErrorHandling(pool, ::addMissingGLCapabilities)
         macroRedefineWithErrorHandling(pool, ::addLegacyCompatibilityMethodsToGL11)
-        macroRedefineWithErrorHandling(pool, ::gl20AddCompatibilityMethods)
+        macroRedefineWithErrorHandling(pool, ::addLegacyCompatibilityMethodsToGL20)
         macroRedefineWithErrorHandling(pool, ::copyAlExtensions)
         macroRedefineWithErrorHandling(pool, ::addLegacyCompatibilityMethodsToAL10)
     }
@@ -98,7 +98,7 @@ class EarlyRiser : Runnable {
         }
 
         // new GL20 doesn't have a way to supply a shader source using ByteBuffer so this adds a method to do it
-        fun gl20AddCompatibilityMethods(classPool: ClassPool) {
+        fun addLegacyCompatibilityMethodsToGL20(classPool: ClassPool) {
             val cc = classPool.get("org.lwjgl.opengl.GL20")
             val code = """
                 public static void glShaderSource(int shader, java.nio.ByteBuffer string) {
@@ -108,6 +108,10 @@ class EarlyRiser : Runnable {
                     string.position(0);
                     org.lwjgl.opengl.GL20.glShaderSource(shader, new String(data));
                 }
+                
+                public static void glUniformMatrix4(int location, boolean transpose, FloatBuffer matrices) {
+	            	glUniformMatrix4fv(location, transpose, matrices);
+	            }
             """.trimIndent()
             cc.addMethod(CtNewMethod.make(code, cc))
             defineCtClass(cc, GL::class.java, classPool.classLoader)
