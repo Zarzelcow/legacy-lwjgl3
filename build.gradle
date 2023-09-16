@@ -2,7 +2,6 @@ plugins {
     id 'fabric-loom' version "1.2.+"
     id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'maven-publish'
-    id "org.jetbrains.kotlin.jvm" version "1.6.10"
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_8
@@ -51,11 +50,6 @@ dependencies {
     mappings "net.legacyfabric:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-common")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8") // dekotlinify soon :sob:
-
     implementation("org.javassist:javassist:3.29.2-GA")
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
 
@@ -69,7 +63,7 @@ dependencies {
     runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
 }
 
-configurations.all {
+configurations.configureEach {
     exclude group: "org.lwjgl.lwjgl"
 }
 
@@ -87,11 +81,6 @@ processResources {
 tasks.withType(JavaCompile).configureEach {
     it.options.encoding = "UTF-8"
     if (JavaVersion.current().isJava9Compatible()) it.options.release = 8
-}
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
 }
 
 java {
@@ -115,10 +104,6 @@ shadowJar {
         exclude(dependency("org.lwjgl:lwjgl-opengl:$lwjglVersion"))
     }
     dependencies {
-        include(dependency("org.jetbrains.kotlin:kotlin-stdlib"))
-        include(dependency("org.jetbrains.kotlin:kotlin-stdlib-common"))
-        include(dependency("org.jetbrains.kotlin:kotlin-stdlib-jdk7"))
-        include(dependency("org.jetbrains.kotlin:kotlin-stdlib-jdk8"))
         include(dependency("org.javassist:javassist:3.29.2-GA"))
 
         include(dependency("org.lwjgl:lwjgl:$lwjglVersion"))
