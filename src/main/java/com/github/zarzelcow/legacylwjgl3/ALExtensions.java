@@ -1,13 +1,13 @@
 package com.github.zarzelcow.legacylwjgl3;
 
-import kotlin.jvm.internal.Intrinsics;
+import java.nio.IntBuffer;
+
+import org.apache.commons.lang3.Validate;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALC10;
 import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.system.MemoryStack;
-
-import java.nio.IntBuffer;
 
 import static org.lwjgl.openal.AL.createCapabilities;
 
@@ -49,7 +49,7 @@ public class ALExtensions {
                     MemoryStack stack = MemoryStack.stackPush();
                     long var8 = _devicePtr;
                     int var10003 = contextSynchronized ? 1 : 0;
-                    Intrinsics.checkNotNullExpressionValue(stack, "stack");
+                    Validate.notNull(stack, "stack");
                     _contextPtr = ALC10.alcCreateContext(var8, createAttributeList(contextFrequency, contextRefresh, var10003, stack));
                     stack.close();
                 }
@@ -68,7 +68,7 @@ public class ALExtensions {
         create(null, 44100, 60, false);
     }
 
-    private static final IntBuffer createAttributeList(int contextFrequency, int contextRefresh, int contextSynchronized, MemoryStack stack) {
+    private static IntBuffer createAttributeList(int contextFrequency, int contextRefresh, int contextSynchronized, MemoryStack stack) {
         IntBuffer buffer = stack.callocInt(7);
         buffer.put(0, 4103);
         buffer.put(1, contextFrequency);
